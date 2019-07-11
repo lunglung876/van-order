@@ -1,11 +1,13 @@
 version:  '3.7'
 services:
     mysql:
-        image: mysql:8.0
+        image: mysql:5.7
         restart: on-failure
         environment:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: example
+        ports:
+            - '33061:3306'
     nginx:
         image: nginx:1.15.3-alpine
         restart: on-failure
@@ -22,3 +24,5 @@ services:
             dockerfile: docker/php/Dockerfile
         restart: on-failure
         user: 1000:1000
+        links:
+            - mysql:db
