@@ -23,5 +23,7 @@ services:
             context: .
             dockerfile: docker/php/Dockerfile
         restart: on-failure
+        env_file:
+            - .env
         links:
             - mysql:db
