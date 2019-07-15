@@ -60,6 +60,16 @@ class Order
      */
     private $destinationLongitude;
 
+    public function __construct($originLatitude, $originLongitude, $destinationLatitude, $destinationLongitude)
+    {
+        $this->setStatus(self::STATUS_UNASSIGNED);
+        $this->setCreatedAt(new \DateTime());
+        $this->setOriginLatitude($originLatitude);
+        $this->setOriginLongitude($originLongitude);
+        $this->setDestinationLatitude($destinationLatitude);
+        $this->setDestinationLongitude($destinationLongitude);
+    }
+
     public function getId(): ?int
     {
         return $this->id;

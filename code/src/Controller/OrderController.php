@@ -22,6 +22,17 @@ class OrderController extends AbstractFOSRestController
     {
         $origin = $request->get('origin');
         $destination = $request->get('destination');
+
+        if (empty($origin[0]) || empty($origin[1]) || count($origin) > 2 || !is_string($origin[0]) || !is_string($origin[1])) {
+            throw new BadRequestHttpException('Incorrect origin.');
+        }
+
+        if (empty($destination[0]) || empty($destination[1]) || count($destination) > 2 || !is_string($destination[0]) ||
+            !is_string($destination[1])
+        ) {
+            throw new BadRequestHttpException('Incorrect destination.');
+        }
+
         $order = $this->createOrder($origin, $destination, $entityManager, $validator);
 
         return [
@@ -33,23 +44,7 @@ class OrderController extends AbstractFOSRestController
 
     private function createOrder($origin, $destination, EntityManagerInterface $entityManager, ValidatorInterface $validator) : Order
     {
-        if (empty($origin[0]) || empty($origin[1]) || count($origin) > 2 || !is_string($origin[0]) || !is_string($origin[1])) {
-            throw new BadRequestHttpException('Incorrect origin.');
-        }
-
-        if (empty($destination[0]) || empty($destination[1]) || count($destination) > 2 || !is_string($destination[0]) ||
-            !is_string($destination[1])
-        ) {
-            throw new BadRequestHttpException('Incorrect destination.');
-        }
-
-        $order = new Order();
-        $order->setStatus(Order::STATUS_UNASSIGNED);
-        $order->setCreatedAt(new \DateTime());
-        $order->setOriginLatitude($origin[0]);
-        $order->setOriginLongitude($origin[1]);
-        $order->setDestinationLatitude($destination[0]);
-        $order->setDestinationLongitude($destination[1]);
+        $order = new Order($origin[0], $origin[1], $destination[0], $destination[1]);
 
         // Validate origin and destination
         $violations = $validator->validate($order);
