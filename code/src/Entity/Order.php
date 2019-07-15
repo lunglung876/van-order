@@ -11,8 +11,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Order
 {
-    const STATUS_UNASSIGNED = 'unassigned';
-    const STATUS_TAKEN = 'taken';
+    const STATUS_UNASSIGNED = 'UNASSIGNED';
+    const STATUS_TAKEN = 'TAKEN';
 
     /**
      * @ORM\Id()

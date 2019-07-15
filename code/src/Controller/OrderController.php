@@ -3,10 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Lock\Factory;
+use Symfony\Component\Lock\Lock;
+use Symfony\Component\Lock\Store\SemaphoreStore;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use GuzzleHttp\Client;
@@ -23,13 +27,13 @@ class OrderController extends AbstractFOSRestController
         $origin = $request->get('origin');
         $destination = $request->get('destination');
 
-        if (empty($origin[0]) || empty($origin[1]) || count($origin) > 2 || !is_string($origin[0]) || !is_string($origin[1])) {
+        // origin is not a pair of string
+        if (count($origin) !== 2 || !is_string($origin[0]) || !is_string($origin[1])) {
             throw new BadRequestHttpException('Incorrect origin.');
         }
 
-        if (empty($destination[0]) || empty($destination[1]) || count($destination) > 2 || !is_string($destination[0]) ||
-            !is_string($destination[1])
-        ) {
+        // destination is not a pair of string
+        if (count($destination) !== 2 || !is_string($destination[0]) || !is_string($destination[1])) {
             throw new BadRequestHttpException('Incorrect destination.');
         }
 
@@ -42,10 +46,42 @@ class OrderController extends AbstractFOSRestController
         ];
     }
 
+    /**
+     * @Route("/orders/{id}", name="order_take", methods={"PATCH"})
+     * @View()
+     */
+    public function take(Request $request, $id, OrderRepository $orderRepository, EntityManagerInterface $entityManager)
+    {
+        $status = $request->get('status');
+
+        if (empty($status) || $status !== Order::STATUS_TAKEN) {
+            throw new BadRequestHttpException('Incorrect status.');
+        }
+
+        $lock = $this->createOrderLock($id);
+
+        if (!$lock->acquire()) {
+            throw new BadRequestHttpException('Order is locked.');
+        }
+
+        $order = $orderRepository->find($id);
+
+        if ($order->getStatus() !== Order::STATUS_UNASSIGNED) {
+            throw new BadRequestHttpException('Order is already taken.');
+        }
+
+        $order->setStatus(Order::STATUS_TAKEN);
+        $entityManager->flush();
+        $lock->release();
+
+        return [
+            'status' => 'SUCCESS'
+        ];
+    }
+
     private function createOrder($origin, $destination, EntityManagerInterface $entityManager, ValidatorInterface $validator) : Order
     {
         $order = new Order($origin[0], $origin[1], $destination[0], $destination[1]);
-
         // Validate origin and destination
         $violations = $validator->validate($order);
 
@@ -62,6 +98,7 @@ class OrderController extends AbstractFOSRestController
         return $order;
     }
 
+    // Calculate distance by using google maps API
     private function getDistance($origin, $destination) : int
     {
         $client = new Client();
@@ -75,10 +112,19 @@ class OrderController extends AbstractFOSRestController
 
         $response = json_decode($response->getBody(), true);
 
+        // google cannot calculate the distance.
         if (!isset($response['rows'][0]['elements'][0]['status']) || $response['rows'][0]['elements'][0]['status'] !== 'OK') {
             throw new BadRequestHttpException('Cannot calculate distance');
         }
 
         return $response['rows'][0]['elements'][0]['distance']['value'];
+    }
+
+    private function createOrderLock($orderId) : Lock
+    {
+        $store = new SemaphoreStore();
+        $factory = new Factory($store);
+
+        return $factory->createLock('order:' . $orderId);
     }
 }
