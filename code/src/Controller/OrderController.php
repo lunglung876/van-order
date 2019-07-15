@@ -6,6 +6,9 @@ use App\Entity\Order;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
+use Pagerfanta\Adapter\DoctrineORMAdapter;
+use Pagerfanta\Exception\OutOfRangeCurrentPageException;
+use Pagerfanta\Pagerfanta;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Lock\Factory;
@@ -77,6 +80,37 @@ class OrderController extends AbstractFOSRestController
         return [
             'status' => 'SUCCESS'
         ];
+    }
+
+    /**
+     * @Route("/orders", name="order_list", methods={"GET"})
+     * @View()
+     */
+    public function list(Request $request, OrderRepository $orderRepository)
+    {
+        $limit = $request->query->get('limit');
+        $page = $request->query->get('page');
+
+        if (preg_match('/^\d+$/', $limit) === 0 || (int) $limit < 1) {
+            throw new BadRequestHttpException('The value of limit is not valid.');
+        }
+
+        if (preg_match('/^\d+$/', $page) === 0 || (int) $page < 1) {
+            throw new BadRequestHttpException('The value of page is not valid.');
+        }
+
+        $queryBuilder = $orderRepository->createQueryBuilder('o');
+        $adapter = new DoctrineORMAdapter($queryBuilder);
+        $pagerfanta = new Pagerfanta($adapter);
+        $pagerfanta->setMaxPerPage((int) $limit);
+
+        try {
+            $pagerfanta->setCurrentPage((int) $page);
+        } catch (OutOfRangeCurrentPageException $e) {
+            throw new BadRequestHttpException($e->getMessage());
+        }
+
+        return $pagerfanta->getCurrentPageResults();
     }
 
     private function createOrder($origin, $destination, EntityManagerInterface $entityManager, ValidatorInterface $validator) : Order

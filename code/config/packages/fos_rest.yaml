@@ -12,3 +12,5 @@ fos_rest:
         exception_controller: 'fos_rest.exception.controller:showAction'
         messages:
             'Symfony\Component\HttpKernel\Exception\BadRequestHttpException': true
+    serializer:
+        groups: ['default']
