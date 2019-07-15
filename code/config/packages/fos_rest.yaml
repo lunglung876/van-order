@@ -1,0 +1,14 @@
+# Read the documentation: https://symfony.com/doc/master/bundles/FOSRestBundle/index.html
+fos_rest:
+    format_listener:
+        rules:
+            - { priorities: ['json'], fallback_format: json, prefer_extension: false }
+    view:
+        view_response_listener: 'force'
+        formats:
+            json: true
+    exception:
+        enabled: true
+        exception_controller: 'fos_rest.exception.controller:showAction'
+        messages:
+            'Symfony\Component\HttpKernel\Exception\BadRequestHttpException': true
