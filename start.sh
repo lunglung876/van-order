@@ -4,6 +4,10 @@
 docker run --rm -v $(pwd)/code:/app composer install
 docker-compose build
 docker-compose up -d
+
+# Wait for MySQL to get ready
+sleep 15
+docker-compose exec php ./bin/console cache:clear -e prod
 # Create database
 docker-compose exec php ./bin/console doctrine:database:create --no-interaction -e prod
 # Update database schema
