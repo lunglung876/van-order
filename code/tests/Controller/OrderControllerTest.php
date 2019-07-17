@@ -15,7 +15,7 @@ class OrderControllerTest extends JsonApiTestCase
         $this->assertEquals('[]', $client->getResponse()->getContent());
     }
 
-    public function testIncorrectLimitList()
+    public function testListWithIncorrectLimit()
     {
         $client = static::createClient();
 
@@ -24,7 +24,7 @@ class OrderControllerTest extends JsonApiTestCase
         $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
-    public function testIncorrectPageList()
+    public function testListWithIncorrectPage()
     {
         $client = static::createClient();
 
@@ -42,12 +42,10 @@ class OrderControllerTest extends JsonApiTestCase
             'destination' => ['22.421550','114.171112']
         ]);
 
-        $response = json_decode($client->getResponse()->getContent(), true);
-
         $this->assertResponse($client->getResponse(), 'create');
     }
 
-    public function testIncorrectDestinationCreate()
+    public function testCreateWithIncorrectDestination()
     {
         $client = static::createClient();
 
@@ -59,7 +57,7 @@ class OrderControllerTest extends JsonApiTestCase
         $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
-    public function testIncorrectOriginCreate()
+    public function testCreateWithIncorrectOrigin()
     {
         $client = static::createClient();
 
@@ -80,6 +78,24 @@ class OrderControllerTest extends JsonApiTestCase
         $this->assertResponse($client->getResponse(), 'list');
     }
 
+    public function testTakeWithIncorrectState()
+    {
+        $client = static::createClient();
+
+        $client->request('PATCH', '/orders/1', ['status' => 'ASSIGNED']);
+
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+    }
+
+    public function testTakeWithIncorrectOrderId()
+    {
+        $client = static::createClient();
+
+        $client->request('PATCH', '/orders/2', ['status' => 'TAKEN']);
+
+        $this->assertEquals(404, $client->getResponse()->getStatusCode());
+    }
+
     public function testTake()
     {
         $client = static::createClient();
@@ -87,5 +103,14 @@ class OrderControllerTest extends JsonApiTestCase
         $client->request('PATCH', '/orders/1', ['status' => 'TAKEN']);
 
         $this->assertResponse($client->getResponse(), 'take');
+    }
+
+    public function testTakeWithTakenOrder()
+    {
+        $client = static::createClient();
+
+        $client->request('PATCH', '/orders/1', ['status' => 'TAKEN']);
+
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 }

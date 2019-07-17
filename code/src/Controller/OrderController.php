@@ -11,6 +11,7 @@ use Pagerfanta\Exception\OutOfRangeCurrentPageException;
 use Pagerfanta\Pagerfanta;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Lock\Factory;
 use Symfony\Component\Lock\Lock;
 use Symfony\Component\Lock\Store\SemaphoreStore;
@@ -69,7 +70,15 @@ class OrderController extends AbstractFOSRestController
 
         $order = $orderRepository->find($id);
 
+        if (empty($order)) {
+            $lock->release();
+
+            throw new NotFoundHttpException('Order not found.');
+        }
+
         if ($order->getStatus() !== Order::STATUS_UNASSIGNED) {
+            $lock->release();
+
             throw new BadRequestHttpException('Order is already taken.');
         }
 
