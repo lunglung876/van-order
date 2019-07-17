@@ -125,7 +125,7 @@ class OrderController extends AbstractFOSRestController
     private function createOrder($origin, $destination, EntityManagerInterface $entityManager, ValidatorInterface $validator) : Order
     {
         $order = new Order($origin[0], $origin[1], $destination[0], $destination[1]);
-        // Validate origin and destination
+        // Validate origin and destination, validation rule is located in Order entity
         $violations = $validator->validate($order);
 
         if ($violations->count() > 0) {

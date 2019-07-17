@@ -43,24 +43,28 @@ class Order
     /**
      * @ORM\Column(type="string", length=20)
      * @Assert\Regex("/^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/")
+     * Value should be between -90.000000 AND 90.000000
      */
     private $originLatitude;
 
     /**
      * @ORM\Column(type="string", length=20)
      * @Assert\Regex("/^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/")
+     * Value should be between -180.000000 AND 180.000000
      */
     private $originLongitude;
 
     /**
      * @ORM\Column(type="string", length=20)
      * @Assert\Regex("/^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/")
+     * Value should be between -90.000000 AND 90.000000
      */
     private $destinationLatitude;
 
     /**
      * @ORM\Column(type="string", length=20)
      * @Assert\Regex("/^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/")
+     * Value should be between -180.000000 AND 180.000000
      */
     private $destinationLongitude;
 
