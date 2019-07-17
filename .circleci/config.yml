@@ -11,7 +11,7 @@ jobs:
       - checkout
 
       - restore_cache:
-          key: dependency
+          key: dependency_v2
 
       - run:
           name: Install PHP extensions
@@ -39,10 +39,6 @@ jobs:
           command: composer install --ignore-platform-reqs --prefer-source --no-interaction
           working_directory: code
 
-      - save_cache:
-          key: dependency
-          paths: code/vendor
-
       - run:
           command: ./bin/console doctrine:database:create --no-interaction -e test
           working_directory: code
@@ -54,3 +50,9 @@ jobs:
       - run:
           command: ./bin/phpunit
           working_directory: code
+
+      - save_cache:
+          key: dependency_v2
+          paths:
+            - code/vendor
+            - code/bin/.phpunit

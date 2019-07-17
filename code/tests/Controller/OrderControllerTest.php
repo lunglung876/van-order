@@ -3,12 +3,14 @@
 namespace App\Tests\Controller;
 
 use ApiTestCase\JsonApiTestCase;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class OrderControllerTest extends JsonApiTestCase
 {
     public function testEmptyList()
     {
-        $client = static::createClient();
+        $client = $this->getClient();
 
         $client->request('GET', '/orders?limit=10&page=1');
 
@@ -17,25 +19,23 @@ class OrderControllerTest extends JsonApiTestCase
 
     public function testListWithIncorrectLimit()
     {
-        $client = static::createClient();
+        $this->expectException(BadRequestHttpException::class);
 
+        $client = $this->getClient();
         $client->request('GET', '/orders?limit=0&page=1');
-
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
     public function testListWithIncorrectPage()
     {
-        $client = static::createClient();
+        $this->expectException(BadRequestHttpException::class);
 
+        $client = $this->getClient();
         $client->request('GET', '/orders?limit=10&page=0');
-
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
     public function testCreate()
     {
-        $client = static::createClient();
+        $client = $this->getClient();
 
         $client->request('POST', '/orders', [
             'origin' => ['22.334600','114.147636'],
@@ -47,31 +47,29 @@ class OrderControllerTest extends JsonApiTestCase
 
     public function testCreateWithIncorrectDestination()
     {
-        $client = static::createClient();
+        $this->expectException(BadRequestHttpException::class);
 
+        $client = $this->getClient();
         $client->request('POST', '/orders', [
             'origin' => ['22.334600','114.147636'],
             'destination' => ['22.421550','194.171112']
         ]);
-
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
     public function testCreateWithIncorrectOrigin()
     {
-        $client = static::createClient();
+        $this->expectException(BadRequestHttpException::class);
 
+        $client = $this->getClient();
         $client->request('POST', '/orders', [
             'origin' => ['92.334600','114.147636'],
             'destination' => ['22.421550','194.171112']
         ]);
-
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
     public function testList()
     {
-        $client = static::createClient();
+        $client = $this->getClient();
 
         $client->request('GET', '/orders?limit=10&page=1');
 
@@ -80,25 +78,23 @@ class OrderControllerTest extends JsonApiTestCase
 
     public function testTakeWithIncorrectState()
     {
-        $client = static::createClient();
+        $this->expectException(BadRequestHttpException::class);
 
+        $client = $this->getClient();
         $client->request('PATCH', '/orders/1', ['status' => 'ASSIGNED']);
-
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
     public function testTakeWithIncorrectOrderId()
     {
-        $client = static::createClient();
+        $this->expectException(NotFoundHttpException::class);
 
+        $client = $this->getClient();
         $client->request('PATCH', '/orders/2', ['status' => 'TAKEN']);
-
-        $this->assertEquals(404, $client->getResponse()->getStatusCode());
     }
 
     public function testTake()
     {
-        $client = static::createClient();
+        $client = $this->getClient();
 
         $client->request('PATCH', '/orders/1', ['status' => 'TAKEN']);
 
@@ -107,10 +103,17 @@ class OrderControllerTest extends JsonApiTestCase
 
     public function testTakeWithTakenOrder()
     {
-        $client = static::createClient();
+        $this->expectException(BadRequestHttpException::class);
 
+        $client = $this->getClient();
         $client->request('PATCH', '/orders/1', ['status' => 'TAKEN']);
+    }
 
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+    private function getClient()
+    {
+        $client = static::createClient();
+        $client->catchExceptions(false);
+        
+        return $client;
     }
 }

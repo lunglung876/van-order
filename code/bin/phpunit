@@ -6,8 +6,6 @@ if (!file_exists(dirname(__DIR__).'/vendor/symfony/phpunit-bridge/bin/simple-php
     exit(1);
 }
 
-putenv('SYMFONY_PHPUNIT_VERSION=7.3');
-
 if (false === getenv('SYMFONY_PHPUNIT_DIR')) {
     putenv('SYMFONY_PHPUNIT_DIR='.__DIR__.'/.phpunit');
 }
