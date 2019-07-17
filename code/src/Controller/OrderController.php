@@ -116,7 +116,7 @@ class OrderController extends AbstractFOSRestController
         try {
             $pagerfanta->setCurrentPage((int) $page);
         } catch (OutOfRangeCurrentPageException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+            throw new NotFoundHttpException('Page not found.');
         }
 
         return $pagerfanta->getCurrentPageResults();
