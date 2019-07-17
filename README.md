@@ -16,4 +16,4 @@
 ---
 
 # Tests
-Tests are located at `code/tests`. Tests are ran automatically on CircleCI.
+Tests are located in the directory `code/tests`. They are ran automatically on CircleCI.
