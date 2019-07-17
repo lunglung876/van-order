@@ -12,3 +12,8 @@
 ## 2. Start web server
 
 1. Run `start.sh` and the web server will be available at `localhost:8080`
+
+---
+
+# Tests
+Tests are located at `code/tests`. Tests are ran automatically on CircleCI.
