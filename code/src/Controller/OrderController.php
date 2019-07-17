@@ -64,6 +64,7 @@ class OrderController extends AbstractFOSRestController
 
         $lock = $this->createOrderLock($id);
 
+        // Prevent race condition by locking the order.
         if (!$lock->acquire()) {
             throw new BadRequestHttpException('Order is locked.');
         }
