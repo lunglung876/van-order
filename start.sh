@@ -6,7 +6,7 @@ docker-compose build
 docker-compose up -d
 
 # Wait for MySQL to get ready
-sleep 15
+sleep 20
 
 docker-compose exec php ./bin/console cache:clear -e prod
 # Create database
